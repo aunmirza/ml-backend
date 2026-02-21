@@ -2,7 +2,6 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import uvicorn
-import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
@@ -11,6 +10,8 @@ from sklearn.metrics import (
     r2_score, mean_absolute_error, mean_squared_error,
     accuracy_score, confusion_matrix, silhouette_score
 )
+import matplotlib
+matplotlib.use("Agg")  # IMPORTANT FIX FOR RENDER
 import matplotlib.pyplot as plt
 import seaborn as sns
 import base64
