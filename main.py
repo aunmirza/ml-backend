@@ -18,7 +18,6 @@ import io
 import os
 import tempfile
 
-# Dark theme
 plt.style.use("dark_background")
 
 app = FastAPI()
@@ -31,7 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Convert Matplotlib figure to Base64
 def fig_to_base64():
     buf = io.BytesIO()
     plt.savefig(buf, format="png", dpi=200, bbox_inches="tight")
@@ -47,7 +45,6 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     with open(file_path, "wb") as f:
         f.write(await file.read())
 
-    # Load data
     if file.filename.endswith(".csv"):
         df = pd.read_csv(file_path)
     else:
@@ -57,12 +54,10 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     X = df.drop(target, axis=1)
     y = df[target]
 
-    # Train/test split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2
     )
 
-    # Select model
     if model == "linear_regression":
         clf = LinearRegression()
 
@@ -105,13 +100,9 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     else:
         return {"error": "Unknown model"}
 
-    # Fit model
     clf.fit(X_train, y_train)
-
-    # Predictions
     predictions = clf.predict(X_test)
 
-    # Metrics
     metrics = {
         "r2": None,
         "mae": None,
@@ -120,7 +111,6 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
         "silhouette": None
     }
 
-    # Regression metrics
     try:
         metrics["r2"] = r2_score(y_test, predictions)
         metrics["mae"] = mean_absolute_error(y_test, predictions)
@@ -128,19 +118,16 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     except:
         pass
 
-    # Classification metrics
     try:
         metrics["accuracy"] = accuracy_score(y_test, predictions.round())
     except:
         pass
 
-    # Clustering metrics
     try:
         metrics["silhouette"] = silhouette_score(X, clf.labels_)
     except:
         pass
 
-    # Generate charts
     charts = {
         "actual_vs_predicted": None,
         "residuals": None,
@@ -149,7 +136,6 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
         "clusters": None
     }
 
-    # Actual vs Predicted
     try:
         plt.figure(figsize=(8, 6))
         plt.scatter(y_test, predictions, color="cyan")
@@ -161,7 +147,6 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     except:
         pass
 
-    # Residual plot
     try:
         residuals = y_test - predictions
         plt.figure(figsize=(8, 6))
@@ -175,7 +160,6 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     except:
         pass
 
-    # Feature importance
     try:
         if hasattr(clf, "feature_importances_"):
             plt.figure(figsize=(8, 6))
@@ -186,7 +170,6 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     except:
         pass
 
-    # Confusion matrix
     try:
         cm = confusion_matrix(y_test, predictions.round())
         plt.figure(figsize=(8, 6))
@@ -197,7 +180,6 @@ async def predict(file: UploadFile = File(...), model: str = Form(...)):
     except:
         pass
 
-    # Clusters
     try:
         if hasattr(clf, "labels_"):
             plt.figure(figsize=(8, 6))
